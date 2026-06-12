@@ -3,30 +3,21 @@ import Product from "../models/Product.js";
 export const createProduct = async (req, res, next) => {
   try {
     const {
-      name,
-      type,
-      quantityStock,
-      mrp,
-      sellingPrice,
-      brandName,
-      exchangeEligibility,
-      images,
-      userEmail,
+      name, type, quantityStock, mrp, sellingPrice,
+      brandName, exchangeEligibility, userEmail,
     } = req.body;
 
     if (!name) {
       return res.status(400).json({ success: false, message: "Please enter product name" });
     }
 
+    // Cloudinary returns full URL in file.path
+    const images = req.files ? req.files.map((file) => file.path) : [];
+
     const product = await Product.create({
-      name,
-      type,
-      quantityStock,
-      mrp,
-      sellingPrice,
-      brandName,
-      exchangeEligibility,
-      images: images || [],
+      name, type, quantityStock, mrp, sellingPrice,
+      brandName, exchangeEligibility,
+      images,
       userEmail,
     });
 
@@ -72,6 +63,11 @@ export const updateProduct = async (req, res, next) => {
     }
 
     const updateData = { ...req.body };
+
+    // Agar naye images upload kiye hain toh replace karo
+    if (req.files && req.files.length > 0) {
+      updateData.images = req.files.map((file) => file.path);
+    }
 
     const updated = await Product.findByIdAndUpdate(req.params.id, updateData, {
       new: true,

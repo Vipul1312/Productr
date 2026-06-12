@@ -17,10 +17,8 @@ const ProductCard = ({ product, onPublish, onEdit, onDelete }) => {
       <div className="card-row"><span>Total Number of images -</span><b>{product.images?.length || 0}</b></div>
       <div className="card-row"><span>Exchange Eligibility -</span><b>{product.exchangeEligibility?.toUpperCase()}</b></div>
       <div className="card-actions">
-        <button
-          className={product.isPublished ? "btn-unpublish" : "btn-publish"}
-          onClick={() => onPublish(product)}
-        >
+        <button className={product.isPublished ? "btn-unpublish" : "btn-publish"}
+          onClick={() => onPublish(product)}>
           {product.isPublished ? "Unpublish" : "Publish"}
         </button>
         <button className="btn-edit" onClick={() => onEdit(product)}>Edit</button>

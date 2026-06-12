@@ -11,9 +11,10 @@ const ProductModal = ({ mode, product, onClose, onSubmit, loading }) => {
     sellingPrice: "",
     brandName: "",
     exchangeEligibility: "Yes",
-    imageUrl: "",
   });
   const [errors, setErrors] = useState({});
+  const [files, setFiles] = useState([]);
+  const [previews, setPreviews] = useState([]);
 
   useEffect(() => {
     if (mode === "edit" && product) {
@@ -25,14 +26,21 @@ const ProductModal = ({ mode, product, onClose, onSubmit, loading }) => {
         sellingPrice: product.sellingPrice || "",
         brandName: product.brandName || "",
         exchangeEligibility: product.exchangeEligibility || "Yes",
-        imageUrl: product.images?.[0] || "",
       });
+      // Existing images from Cloudinary URLs
+      setPreviews(product.images || []);
     }
   }, [mode, product]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setErrors({ ...errors, [e.target.name]: "" });
+  };
+
+  const handleFileChange = (e) => {
+    const selected = Array.from(e.target.files);
+    setFiles(selected);
+    setPreviews(selected.map((f) => URL.createObjectURL(f)));
   };
 
   const validate = () => {
@@ -45,11 +53,11 @@ const ProductModal = ({ mode, product, onClose, onSubmit, loading }) => {
 
   const handleSave = () => {
     if (!validate()) return;
-    const payload = {
-      ...form,
-      images: form.imageUrl ? [form.imageUrl] : [],
-    };
-    onSubmit(payload);
+    // FormData bhejenge kyunki files hain
+    const formData = new FormData();
+    Object.entries(form).forEach(([k, v]) => formData.append(k, v));
+    files.forEach((f) => formData.append("images", f));
+    onSubmit(formData);
   };
 
   return (
@@ -62,13 +70,8 @@ const ProductModal = ({ mode, product, onClose, onSubmit, loading }) => {
 
         <div className="form-field">
           <label>Product Name</label>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            className={errors.name ? "input-error" : ""}
-            placeholder="Enter product name"
-          />
+          <input name="name" value={form.name} onChange={handleChange}
+            className={errors.name ? "input-error" : ""} placeholder="Enter product name" />
           {errors.name && <p className="error-text">{errors.name}</p>}
         </div>
 
@@ -76,70 +79,45 @@ const ProductModal = ({ mode, product, onClose, onSubmit, loading }) => {
           <label>Product Type</label>
           <select name="type" value={form.type} onChange={handleChange}>
             <option value="">Select product type</option>
-            {TYPES.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
+            {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
           {errors.type && <p className="error-text">{errors.type}</p>}
         </div>
 
         <div className="form-field">
           <label>Quantity Stock</label>
-          <input
-            name="quantityStock"
-            type="number"
-            value={form.quantityStock}
-            onChange={handleChange}
-            placeholder="Total number of stock available"
-          />
+          <input name="quantityStock" type="number" value={form.quantityStock}
+            onChange={handleChange} placeholder="Total number of stock available" />
         </div>
 
         <div className="form-field">
           <label>MRP</label>
-          <input
-            name="mrp"
-            type="number"
-            value={form.mrp}
-            onChange={handleChange}
-            placeholder="Enter MRP"
-          />
+          <input name="mrp" type="number" value={form.mrp}
+            onChange={handleChange} placeholder="Enter MRP" />
         </div>
 
         <div className="form-field">
           <label>Selling Price</label>
-          <input
-            name="sellingPrice"
-            type="number"
-            value={form.sellingPrice}
-            onChange={handleChange}
-            placeholder="Enter selling price"
-          />
+          <input name="sellingPrice" type="number" value={form.sellingPrice}
+            onChange={handleChange} placeholder="Enter selling price" />
         </div>
 
         <div className="form-field">
           <label>Brand Name</label>
-          <input
-            name="brandName"
-            value={form.brandName}
-            onChange={handleChange}
-            placeholder="Enter brand name"
-          />
+          <input name="brandName" value={form.brandName}
+            onChange={handleChange} placeholder="Enter brand name" />
         </div>
 
         <div className="form-field">
-          <label>Product Image URL</label>
-          <input
-            name="imageUrl"
-            value={form.imageUrl}
-            onChange={handleChange}
-            placeholder="https://example.com/image.jpg"
-          />
-          {form.imageUrl && (
-            <img
-              src={form.imageUrl}
-              alt="preview"
-              style={{ width: "100%", marginTop: 8, borderRadius: 8, maxHeight: 120, objectFit: "contain" }}
-            />
+          <label>Product Images</label>
+          <input type="file" accept="image/*" multiple onChange={handleFileChange} />
+          {previews.length > 0 && (
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+              {previews.map((src, i) => (
+                <img key={i} src={src} alt=""
+                  style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8 }} />
+              ))}
+            </div>
           )}
         </div>
 

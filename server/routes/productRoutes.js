@@ -1,4 +1,5 @@
 import express from "express";
+import { upload } from "../config/cloudinary.js";
 import {
   createProduct,
   getProducts,
@@ -10,10 +11,10 @@ import {
 
 const router = express.Router();
 
-router.post("/", createProduct);
+router.post("/", upload.array("images", 10), createProduct);
 router.get("/", getProducts);
 router.get("/:id", getProductById);
-router.put("/:id", updateProduct);
+router.put("/:id", upload.array("images", 10), updateProduct);
 router.patch("/:id/publish", togglePublish);
 router.delete("/:id", deleteProduct);
 
