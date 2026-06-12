@@ -22,3 +22,5 @@ const handleSubmit = async (formData) => {
     setSaving(false);
   }
 };
+
+export default Products;
