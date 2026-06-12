@@ -1,9 +1,7 @@
-const SERVER = import.meta.env.VITE_SERVER_URL;
-
 const ProductCard = ({ product, onPublish, onEdit, onDelete }) => {
   const img = product.images?.[0]
-    ? `${SERVER}/uploads/${product.images[0]}`
-    : "https://via.placeholder.com/300x175?text=No+Image";
+    ? product.images[0]
+    : "https://placehold.co/300x175?text=No+Image";
 
   return (
     <div className="card">

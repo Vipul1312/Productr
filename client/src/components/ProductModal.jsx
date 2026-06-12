@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
-const SERVER = import.meta.env.VITE_SERVER_URL;
 const TYPES = ["Foods", "Electronics", "Clothes", "Beauty Products", "Others"];
 
 const ProductModal = ({ mode, product, onClose, onSubmit, loading }) => {
@@ -12,11 +11,9 @@ const ProductModal = ({ mode, product, onClose, onSubmit, loading }) => {
     sellingPrice: "",
     brandName: "",
     exchangeEligibility: "Yes",
+    imageUrl: "",
   });
-  const [files, setFiles] = useState([]);
-  const [existing, setExisting] = useState([]);
   const [errors, setErrors] = useState({});
-  const fileRef = useRef();
 
   useEffect(() => {
     if (mode === "edit" && product) {
@@ -28,8 +25,8 @@ const ProductModal = ({ mode, product, onClose, onSubmit, loading }) => {
         sellingPrice: product.sellingPrice || "",
         brandName: product.brandName || "",
         exchangeEligibility: product.exchangeEligibility || "Yes",
+        imageUrl: product.images?.[0] || "",
       });
-      setExisting(product.images || []);
     }
   }, [mode, product]);
 
@@ -37,13 +34,6 @@ const ProductModal = ({ mode, product, onClose, onSubmit, loading }) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setErrors({ ...errors, [e.target.name]: "" });
   };
-
-  const handleFiles = (e) => {
-    setFiles([...files, ...Array.from(e.target.files)]);
-  };
-
-  const removeFile = (i) => setFiles(files.filter((_, idx) => idx !== i));
-  const removeExisting = (i) => setExisting(existing.filter((_, idx) => idx !== i));
 
   const validate = () => {
     const err = {};
@@ -55,10 +45,11 @@ const ProductModal = ({ mode, product, onClose, onSubmit, loading }) => {
 
   const handleSave = () => {
     if (!validate()) return;
-    const fd = new FormData();
-    Object.keys(form).forEach((k) => fd.append(k, form[k]));
-    files.forEach((f) => fd.append("images", f));
-    onSubmit(fd);
+    const payload = {
+      ...form,
+      images: form.imageUrl ? [form.imageUrl] : [],
+    };
+    onSubmit(payload);
   };
 
   return (
@@ -99,7 +90,7 @@ const ProductModal = ({ mode, product, onClose, onSubmit, loading }) => {
             type="number"
             value={form.quantityStock}
             onChange={handleChange}
-            placeholder="Total numbers of Stock available"
+            placeholder="Total number of stock available"
           />
         </div>
 
@@ -110,7 +101,7 @@ const ProductModal = ({ mode, product, onClose, onSubmit, loading }) => {
             type="number"
             value={form.mrp}
             onChange={handleChange}
-            placeholder="Total numbers of Stock available"
+            placeholder="Enter MRP"
           />
         </div>
 
@@ -121,7 +112,7 @@ const ProductModal = ({ mode, product, onClose, onSubmit, loading }) => {
             type="number"
             value={form.sellingPrice}
             onChange={handleChange}
-            placeholder="Total numbers of Stock available"
+            placeholder="Enter selling price"
           />
         </div>
 
@@ -131,44 +122,24 @@ const ProductModal = ({ mode, product, onClose, onSubmit, loading }) => {
             name="brandName"
             value={form.brandName}
             onChange={handleChange}
-            placeholder="Total numbers of Stock available"
+            placeholder="Enter brand name"
           />
         </div>
 
         <div className="form-field">
-          <div className="upload-head">
-            <span>Upload Product Images</span>
-            <b onClick={() => fileRef.current.click()}>Add More Photos</b>
-          </div>
+          <label>Product Image URL</label>
           <input
-            type="file"
-            ref={fileRef}
-            multiple
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={handleFiles}
+            name="imageUrl"
+            value={form.imageUrl}
+            onChange={handleChange}
+            placeholder="https://example.com/image.jpg"
           />
-          {files.length === 0 && existing.length === 0 ? (
-            <div className="upload-box" onClick={() => fileRef.current.click()}>
-              Enter Description
-              <br />
-              <b style={{ color: "#1a1a3d" }}>Browse</b>
-            </div>
-          ) : (
-            <div className="preview-row">
-              {existing.map((img, i) => (
-                <div className="preview-item" key={`e${i}`}>
-                  <img src={`${SERVER}/uploads/${img}`} alt="" />
-                  <button className="preview-remove" onClick={() => removeExisting(i)}>×</button>
-                </div>
-              ))}
-              {files.map((f, i) => (
-                <div className="preview-item" key={`f${i}`}>
-                  <img src={URL.createObjectURL(f)} alt="" />
-                  <button className="preview-remove" onClick={() => removeFile(i)}>×</button>
-                </div>
-              ))}
-            </div>
+          {form.imageUrl && (
+            <img
+              src={form.imageUrl}
+              alt="preview"
+              style={{ width: "100%", marginTop: 8, borderRadius: 8, maxHeight: 120, objectFit: "contain" }}
+            />
           )}
         </div>
 

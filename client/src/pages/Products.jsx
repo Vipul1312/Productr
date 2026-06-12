@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import api from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import ProductCard from "../components/ProductCard";
@@ -8,6 +9,7 @@ import ProductModal from "../components/ProductModal";
 import DeleteModal from "../components/DeleteModal";
 
 const Products = () => {
+  const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -17,7 +19,7 @@ const Products = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const { data } = await api.get("/products");
+      const { data } = await api.get(`/products?userEmail=${user.email}`);
       setProducts(data.products);
     } catch (err) {
       toast.error("Failed to load products");
@@ -30,14 +32,15 @@ const Products = () => {
     fetchProducts();
   }, []);
 
-  const handleSubmit = async (formData) => {
+  const handleSubmit = async (payload) => {
     try {
       setSaving(true);
+      const dataToSend = { ...payload, userEmail: user.email };
       if (modal.mode === "edit") {
-        await api.put(`/products/${modal.product._id}`, formData);
+        await api.put(`/products/${modal.product._id}`, dataToSend);
         toast.success("Product updated Successfully");
       } else {
-        await api.post("/products", formData);
+        await api.post("/products", dataToSend);
         toast.success("Product added Successfully");
       }
       setModal(null);

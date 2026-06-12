@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import api from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import ProductCard from "../components/ProductCard";
 
 const Home = () => {
+  const { user } = useAuth();
   const [tab, setTab] = useState("published");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +15,7 @@ const Home = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const { data } = await api.get(`/products?status=${tab}`);
+      const { data } = await api.get(`/products?status=${tab}&userEmail=${user.email}`);
       setProducts(data.products);
     } catch (err) {
       toast.error("Failed to load products");
@@ -59,9 +61,9 @@ const Home = () => {
                 No {tab === "published" ? "Published" : "Unpublished"} Products
               </div>
               <div className="empty-sub">
-                Your {tab === "published" ? "Published" : "Unpublished"} Products will appear here
+                Your {tab === "published" ? "published" : "unpublished"} products will appear here
                 <br />
-                Create your first product to publish
+                Go to Products page to add new products
               </div>
             </div>
           ) : (

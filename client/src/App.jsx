@@ -7,7 +7,8 @@ import Home from "./pages/Home";
 import Products from "./pages/Products";
 
 const Protected = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) return null;
   return user ? children : <Navigate to="/" />;
 };
 

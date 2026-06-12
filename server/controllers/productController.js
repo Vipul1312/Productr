@@ -10,15 +10,13 @@ export const createProduct = async (req, res, next) => {
       sellingPrice,
       brandName,
       exchangeEligibility,
+      images,
+      userEmail,
     } = req.body;
 
     if (!name) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Please enter product name" });
+      return res.status(400).json({ success: false, message: "Please enter product name" });
     }
-
-    const images = req.files ? req.files.map((file) => file.filename) : [];
 
     const product = await Product.create({
       name,
@@ -28,14 +26,11 @@ export const createProduct = async (req, res, next) => {
       sellingPrice,
       brandName,
       exchangeEligibility,
-      images,
+      images: images || [],
+      userEmail,
     });
 
-    res.status(201).json({
-      success: true,
-      message: "Product added Successfully",
-      product,
-    });
+    res.status(201).json({ success: true, message: "Product added Successfully", product });
   } catch (error) {
     next(error);
   }
@@ -43,9 +38,10 @@ export const createProduct = async (req, res, next) => {
 
 export const getProducts = async (req, res, next) => {
   try {
-    const { status } = req.query;
+    const { status, userEmail } = req.query;
     let filter = {};
 
+    if (userEmail) filter.userEmail = userEmail;
     if (status === "published") filter.isPublished = true;
     if (status === "unpublished") filter.isPublished = false;
 
@@ -60,9 +56,7 @@ export const getProductById = async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Product not found" });
+      return res.status(404).json({ success: false, message: "Product not found" });
     }
     res.status(200).json({ success: true, product });
   } catch (error) {
@@ -74,28 +68,17 @@ export const updateProduct = async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Product not found" });
+      return res.status(404).json({ success: false, message: "Product not found" });
     }
 
     const updateData = { ...req.body };
-
-    if (req.files && req.files.length > 0) {
-      const newImages = req.files.map((file) => file.filename);
-      updateData.images = [...product.images, ...newImages];
-    }
 
     const updated = await Product.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
       runValidators: true,
     });
 
-    res.status(200).json({
-      success: true,
-      message: "Product updated Successfully",
-      product: updated,
-    });
+    res.status(200).json({ success: true, message: "Product updated Successfully", product: updated });
   } catch (error) {
     next(error);
   }
@@ -105,9 +88,7 @@ export const togglePublish = async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Product not found" });
+      return res.status(404).json({ success: false, message: "Product not found" });
     }
 
     product.isPublished = !product.isPublished;
@@ -127,13 +108,9 @@ export const deleteProduct = async (req, res, next) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Product not found" });
+      return res.status(404).json({ success: false, message: "Product not found" });
     }
-    res
-      .status(200)
-      .json({ success: true, message: "Product Deleted Successfully" });
+    res.status(200).json({ success: true, message: "Product Deleted Successfully" });
   } catch (error) {
     next(error);
   }

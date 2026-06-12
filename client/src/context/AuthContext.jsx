@@ -4,11 +4,13 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [pendingEmail, setPendingEmail] = useState("");
 
   useEffect(() => {
     const saved = localStorage.getItem("productr_user");
     if (saved) setUser(JSON.parse(saved));
+    setLoading(false);
   }, []);
 
   const login = (data) => {
@@ -22,9 +24,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider
-      value={{ user, login, logout, pendingEmail, setPendingEmail }}
-    >
+    <AuthContext.Provider value={{ user, login, logout, loading, pendingEmail, setPendingEmail }}>
       {children}
     </AuthContext.Provider>
   );
