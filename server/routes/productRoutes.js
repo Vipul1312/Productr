@@ -1,13 +1,11 @@
 import express from "express";
-import { upload } from "../config/cloudinary.js";
+import multer from "multer";
 import {
-  createProduct,
-  getProducts,
-  getProductById,
-  updateProduct,
-  togglePublish,
-  deleteProduct,
+  createProduct, getProducts, getProductById,
+  updateProduct, togglePublish, deleteProduct,
 } from "../controllers/productController.js";
+
+const upload = multer({ dest: "uploads/" });
 
 const router = express.Router();
 
