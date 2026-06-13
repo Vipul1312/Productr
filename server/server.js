@@ -8,6 +8,12 @@ import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 
+console.log("ENV CHECK:", {
+  cloudinary_name: process.env.CLOUDINARY_CLOUD_NAME,
+  cloudinary_key: process.env.CLOUDINARY_API_KEY,
+  cloudinary_secret: process.env.CLOUDINARY_API_SECRET ? "EXISTS" : "MISSING",
+});
+
 dotenv.config();
 connectDB();
 
