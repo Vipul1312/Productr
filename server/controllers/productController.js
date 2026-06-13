@@ -1,11 +1,6 @@
 import Product from "../models/Product.js";
-import { v2 as cloudinary } from "cloudinary";
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+import cloudinary from "../config/cloudinary.js";
+import fs from "fs";
 
 export const createProduct = async (req, res, next) => {
   try {
@@ -18,7 +13,6 @@ export const createProduct = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Please enter product name" });
     }
 
-    // Upload images to Cloudinary
     let images = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
@@ -26,6 +20,7 @@ export const createProduct = async (req, res, next) => {
           folder: "productr",
         });
         images.push(result.secure_url);
+        fs.unlinkSync(file.path);
       }
     }
 
@@ -78,6 +73,7 @@ export const updateProduct = async (req, res, next) => {
           folder: "productr",
         });
         images.push(result.secure_url);
+        fs.unlinkSync(file.path);
       }
       updateData.images = images;
     }
