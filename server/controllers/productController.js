@@ -1,6 +1,21 @@
 import Product from "../models/Product.js";
-import cloudinary from "../config/cloudinary.js";
 import fs from "fs";
+import FormData from "form-data";
+import fetch from "node-fetch";
+
+const uploadToImgBB = async (filePath) => {
+  const formData = new FormData();
+  formData.append("image", fs.readFileSync(filePath).toString("base64"));
+  
+  const response = await fetch(
+    `https://api.imgbb.com/1/upload?key=${process.env.IMGBB_API_KEY}`,
+    { method: "POST", body: formData }
+  );
+  
+  const data = await response.json();
+  if (!data.success) throw new Error("ImgBB upload failed");
+  return data.data.url;
+};
 
 export const createProduct = async (req, res, next) => {
   try {
@@ -16,10 +31,8 @@ export const createProduct = async (req, res, next) => {
     let images = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
-        const result = await cloudinary.uploader.upload(file.path, {
-          folder: "productr",
-        });
-        images.push(result.secure_url);
+        const url = await uploadToImgBB(file.path);
+        images.push(url);
         fs.unlinkSync(file.path);
       }
     }
@@ -31,6 +44,7 @@ export const createProduct = async (req, res, next) => {
 
     res.status(201).json({ success: true, message: "Product added Successfully", product });
   } catch (error) {
+    console.log("ERROR:", error.message);
     next(error);
   }
 };
@@ -69,10 +83,8 @@ export const updateProduct = async (req, res, next) => {
     if (req.files && req.files.length > 0) {
       let images = [];
       for (const file of req.files) {
-        const result = await cloudinary.uploader.upload(file.path, {
-          folder: "productr",
-        });
-        images.push(result.secure_url);
+        const url = await uploadToImgBB(file.path);
+        images.push(url);
         fs.unlinkSync(file.path);
       }
       updateData.images = images;
